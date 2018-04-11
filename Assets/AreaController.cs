@@ -56,7 +56,7 @@ public class AreaController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetMouseButton(0)) {
+		if (MousePhase.phase == MousePhase.Phase.Clicked) {
 			RaycastHit hit;
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 

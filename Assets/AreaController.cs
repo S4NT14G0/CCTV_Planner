@@ -11,8 +11,19 @@ public class AreaController : MonoBehaviour {
 
 	private List<GameObject> selectedGrids;
 
-	// Use this for initialization
-	void Start () {
+    enum MousePhase
+    {
+        Clicked,
+        Began,
+        Moved,
+        Ended
+    }
+
+    bool isClickHeld;
+    MousePhase phase;
+
+    // Use this for initialization
+    void Start () {
 		grid = new GameObject[100];
 
 		for (int x = 0; x < grid.Length; x++) {
@@ -24,7 +35,9 @@ public class AreaController : MonoBehaviour {
 			}
 		}
 
-		selectedGrids = new List<GameObject> ();
+        isClickHeld = false;
+        phase = MousePhase.Ended;
+        selectedGrids = new List<GameObject> ();
 	}
 
 	public void SelectGrid (List<GameObject> selectedGridItems) {
@@ -52,22 +65,60 @@ public class AreaController : MonoBehaviour {
 
 		selectedGrids.Clear ();
 	}
-	
-	// Update is called once per frame
-	void Update () {
 
-		if (Input.GetMouseButton(0)) {
-			RaycastHit hit;
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+    // Update is called once per frame
+    void Update() {
 
-			if (Physics.Raycast (ray, out hit)) {
-				Transform objectHit = hit.transform;
+        if (!isClickHeld && Input.GetMouseButtonDown(0))
+        {
+            phase = MousePhase.Clicked;
+        }
+        else
+        {
+            if (Input.GetMouseButton(0))
+                isClickHeld = true;
+            else
+                isClickHeld = false;
+        }
 
-				// Do something with the object that was hit by the raycast.
-				SelectGrid (objectHit.gameObject);
-			} else {
-				DeselectGrid ();
-			}
-		}
+
+
+        if (isClickHeld && phase == MousePhase.Ended)
+        {
+            phase = MousePhase.Began;
+
+            // Dragging has began
+        }
+        else if (isClickHeld && phase == MousePhase.Began)
+        {
+            phase = MousePhase.Moved;
+        }
+        else if (!isClickHeld && phase == MousePhase.Moved)
+        {
+            phase = MousePhase.Ended;
+
+            // Dragging has ended
+        }
+
+        if (phase == MousePhase.Clicked)
+        {
+            // Click Begin
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                Transform objectHit = hit.transform;
+
+                // Do something with the object that was hit by the raycast.
+                SelectGrid(objectHit.gameObject);
+            }
+            else
+            {
+                DeselectGrid();
+            }
+
+            phase = MousePhase.Ended;
+        }
 	}
 }

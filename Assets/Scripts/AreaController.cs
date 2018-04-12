@@ -9,6 +9,8 @@ public class AreaController : MonoBehaviour {
 	[SerializeField]
 	private Material gridLow, gridMedium, gridHigh, gridSelected;
 
+    private Vector3 dragBegin, dragEnd;
+
 	private List<GameObject> selectedGrids;
 
     enum MousePhase
@@ -41,6 +43,8 @@ public class AreaController : MonoBehaviour {
 	}
 
 	public void SelectGrid (List<GameObject> selectedGridItems) {
+        DeselectGrid();
+
 		selectedGrids = selectedGridItems;
 
 		foreach (GameObject grid in selectedGrids) {
@@ -88,16 +92,41 @@ public class AreaController : MonoBehaviour {
             phase = MousePhase.Began;
 
             // Dragging has began
+            dragBegin = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
         else if (isClickHeld && phase == MousePhase.Began)
         {
             phase = MousePhase.Moved;
+            dragEnd = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
         else if (!isClickHeld && phase == MousePhase.Moved)
         {
             phase = MousePhase.Ended;
 
             // Dragging has ended
+            dragEnd = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            // Calculate the rect that was formed and select the respective cubes
+            Vector3 p1 = dragBegin;
+            Vector3 p2 = dragEnd;
+
+            Vector3 scale = p1 - p2;
+            scale.x = Mathf.Abs(scale.x);
+            scale.y = Mathf.Abs(15f);
+            scale.z = Mathf.Abs(scale.z);
+
+            Vector3 center = (p1 + p2) * 0.5f;
+            Vector3 halfExtents = scale * 0.5f; //Halfextents are units in each direction instead of total length in units.
+            RaycastHit[] check = Physics.BoxCastAll(center, halfExtents, Vector3.up);
+
+            List<GameObject> selectedObjects = new List<GameObject>();
+
+            foreach (RaycastHit hit in check)
+            {
+                selectedObjects.Add(hit.transform.gameObject);
+            }
+
+            SelectGrid(selectedObjects);
         }
 
         if (phase == MousePhase.Clicked)

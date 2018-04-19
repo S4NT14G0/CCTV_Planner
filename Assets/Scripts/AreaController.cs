@@ -1,17 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class AreaController : MonoBehaviour {
 
-	private GameObject[] grid;
-
+	private List<GameObject> mapGrid;
+    private List<Material> gridMarkings;
+    
 	[SerializeField]
-	private Material gridLow, gridMedium, gridHigh, gridSelected;
+	private Material gridLow, gridMedium, gridHigh, gridSelected, gridNone, gridBuilding;
 
     private Vector3 dragBegin, dragEnd;
 
 	private List<GameObject> selectedGrids;
+
+    [SerializeField]
+    GameObject areaCanvas;
 
     enum MousePhase
     {
@@ -21,19 +26,25 @@ public class AreaController : MonoBehaviour {
         Ended
     }
 
+
     bool isClickHeld;
     MousePhase phase;
 
     // Use this for initialization
     void Start () {
-		grid = new GameObject[100];
+        mapGrid = new List<GameObject>();
+        gridMarkings = new List<Material>();
 
-		for (int x = 0; x < grid.Length; x++) {
-			for (int y = 0; y < grid.Length; y++) {
-				grid [x] = GameObject.CreatePrimitive (PrimitiveType.Cube);
+		for (int x = 0; x < 100; x++) {
+			for (int y = 0; y < 100; y++) {
+                GameObject grid = GameObject.CreatePrimitive (PrimitiveType.Cube);
 
-				grid [x].transform.position = new Vector3 (x + 0.5f, 0.5f, y + 0.5f);
-				grid [x].GetComponent<Renderer> ().material = gridLow;
+                grid.transform.position = new Vector3 (x + 0.5f, 0.5f, y + 0.5f);
+                grid.GetComponent<Renderer> ().material = gridNone;
+
+                mapGrid.Add(grid);
+
+                gridMarkings.Add(gridNone);
 			}
 		}
 
@@ -42,19 +53,18 @@ public class AreaController : MonoBehaviour {
         selectedGrids = new List<GameObject> ();
 	}
 
-	public void SelectGrid (List<GameObject> selectedGridItems) {
+	void SelectGrid (List<GameObject> selectedGridItems) {
         DeselectGrid();
 
 		selectedGrids = selectedGridItems;
 
 		foreach (GameObject grid in selectedGrids) {
-			grid.GetComponent<Renderer> ().material = gridSelected;
+            grid.GetComponent<Renderer> ().material = gridSelected;
 		}
 	}
 
-	public void SelectGrid (GameObject selectedGridItems) {
+	void SelectGrid (GameObject selectedGridItems) {
 		DeselectGrid ();
-
 		selectedGrids.Add(selectedGridItems);
 
 		foreach (GameObject grid in selectedGrids) {
@@ -62,10 +72,13 @@ public class AreaController : MonoBehaviour {
 		}
 	}
 
-	public void DeselectGrid () {
-		foreach (GameObject grid in selectedGrids) {
-			grid.GetComponent<Renderer> ().material = gridLow;
-		}
+	void DeselectGrid () {
+
+        foreach(GameObject gridItem in selectedGrids)
+        {
+            int index = mapGrid.IndexOf(gridItem);
+            gridItem.GetComponent<Renderer>().material = gridMarkings[index];
+        }
 
 		selectedGrids.Clear ();
 	}
@@ -131,6 +144,8 @@ public class AreaController : MonoBehaviour {
 
         if (phase == MousePhase.Clicked)
         {
+            if (EventSystem.current.IsPointerOverGameObject(-1))
+                return;
             // Click Begin
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -150,4 +165,62 @@ public class AreaController : MonoBehaviour {
             phase = MousePhase.Ended;
         }
 	}
+
+    public void TagLowRisk()
+    {
+        foreach (GameObject gridItem in selectedGrids)
+        {
+            int index = mapGrid.IndexOf(gridItem);
+            gridItem.GetComponent<Renderer>().material = gridLow;
+            gridMarkings[index] = gridLow;
+        }
+
+        DeselectGrid();
+    }
+
+    public void TagMediumRisk()
+    {
+        foreach (GameObject gridItem in selectedGrids)
+        {
+            int index = mapGrid.IndexOf(gridItem);
+            gridItem.GetComponent<Renderer>().material = gridMedium;
+            gridMarkings[index] = gridMedium;
+        }
+
+        DeselectGrid();
+    }
+
+    public void TagHighRisk()
+    {
+        foreach (GameObject gridItem in selectedGrids)
+        {
+            int index = mapGrid.IndexOf(gridItem);
+            gridItem.GetComponent<Renderer>().material = gridHigh;
+            gridMarkings[index] = gridHigh;
+        }
+
+        DeselectGrid();
+    }
+
+    public void TagBuilding()
+    {
+        foreach (GameObject gridItem in selectedGrids)
+        {
+            int index = mapGrid.IndexOf(gridItem);
+            gridItem.GetComponent<Renderer>().material = gridBuilding;
+            gridMarkings[index] = gridBuilding;
+        }
+
+        DeselectGrid();
+    }
+
+    public List<GameObject> GetMapGrid ()
+    {
+        return mapGrid;
+    }
+
+    private void OnDisable()
+    {
+        areaCanvas.SetActive(false);
+    }
 }

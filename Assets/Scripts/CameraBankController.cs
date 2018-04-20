@@ -13,6 +13,8 @@ public class CameraBankController : MonoBehaviour {
     [SerializeField]
     GameObject buttonBank;
 
+	InputField budgetInput;
+
     const int pricePerCamera = 750;
 
 	// Use this for initialization
@@ -23,7 +25,7 @@ public class CameraBankController : MonoBehaviour {
     public void UpdateBank (InputField input)
     {
         budget = int.Parse(input.text);
-        input.text = "$" + input.text;
+        input.text = "Remaining $" + input.text;
 
         int cameras = budget / pricePerCamera;
 
@@ -41,8 +43,9 @@ public class CameraBankController : MonoBehaviour {
 
     void OnButtonClicked (Button clickedButton)
     {
-        Destroy(clickedButton);
+		budget -= pricePerCamera;
 
+		Destroy (clickedButton.gameObject);
     }
 
 }

@@ -1,36 +1,48 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class PlacementController : MonoBehaviour {
-    EventSystem FindEvent;
-    Event Find2;
+
+	[SerializeField]
+	Canvas cameraCanvas;
 
     AreaController areaController;
+	CameraBankController cameraBankController;
 
-    [SerializeField]
-    Canvas placementCanvas;
+	// All the active cameras
+	List<CameraController> cameras;
 
 	// Use this for initialization
-	void Start () {
+	void Start ()
+	{
         this.enabled = false;
-        placementCanvas.enabled = false;
+		cameraCanvas.enabled = false;
+
+		cameras = new List<CameraController> ();
+
         areaController = this.GetComponent<AreaController>();
+		cameraBankController = cameraCanvas.gameObject.GetComponent<CameraBankController> ();
+
+		cameraBankController.onCreateCamera += HandleNewCameraEvent;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-
 
 	}
 
     public void BeginPhase()
     {
         this.enabled = true;
-        placementCanvas.enabled = true;
+		cameraCanvas.enabled = true;
         List<GameObject> mapGrid = areaController.GetMapGrid();
-
         areaController.enabled = false;
     }
+		
+
+	void HandleNewCameraEvent ()
+	{
+		Debug.Log ("Handled");
+	}
 }

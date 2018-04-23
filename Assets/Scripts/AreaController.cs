@@ -35,6 +35,8 @@ public class AreaController : MonoBehaviour {
         mapGrid = new List<GameObject>();
         gridMarkings = new List<Material>();
 
+		GameObject gridParent = new GameObject ();
+
 		for (int x = 0; x < 100; x++) {
 			for (int y = 0; y < 100; y++) {
                 GameObject grid = GameObject.CreatePrimitive (PrimitiveType.Cube);
@@ -42,6 +44,8 @@ public class AreaController : MonoBehaviour {
                 grid.transform.position = new Vector3 (x + 0.5f, 0.5f, y + 0.5f);
                 grid.GetComponent<Renderer> ().material = gridNone;
 
+
+				grid.transform.SetParent (gridParent.transform);
                 mapGrid.Add(grid);
 
                 gridMarkings.Add(gridNone);
@@ -221,6 +225,7 @@ public class AreaController : MonoBehaviour {
 
     private void OnDisable()
     {
-        areaCanvas.SetActive(false);
+		if (areaCanvas != null)
+        	areaCanvas.SetActive(false);
     }
 }

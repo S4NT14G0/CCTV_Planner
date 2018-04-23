@@ -15,6 +15,10 @@ public class CameraBankController : MonoBehaviour {
 
 	InputField budgetInput;
 
+	public delegate void OnCreateCamera ();
+	public event OnCreateCamera onCreateCamera;
+
+
     const int pricePerCamera = 750;
 
 	// Use this for initialization
@@ -34,16 +38,19 @@ public class CameraBankController : MonoBehaviour {
             GameObject cam = GameObject.Instantiate(cctvBtnPrefab);
             Button button = cam.GetComponent<Button>();
             button.onClick.AddListener(() => { OnButtonClicked(button); });
-            cam.transform.parent = buttonBank.transform;
+			cam.transform.SetParent(buttonBank.transform);
         }
 
-        Debug.Log(cameras);
         input.enabled = false;
     }
 
     void OnButtonClicked (Button clickedButton)
     {
 		budget -= pricePerCamera;
+
+		// Notify if any UI is listening
+		if (onCreateCamera != null)
+			onCreateCamera();
 
 		Destroy (clickedButton.gameObject);
     }

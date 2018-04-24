@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CCTVPlacementController : MonoBehaviour {
 
@@ -13,6 +14,8 @@ public class CCTVPlacementController : MonoBehaviour {
 	AreaSecurityDefinitionController areaController;
 	Phase2CanvasController cameraBankController;
 
+    CameraController selectedCamera;
+
 	// All the active cameras
 	List<CameraController> cameras;
 
@@ -21,13 +24,29 @@ public class CCTVPlacementController : MonoBehaviour {
 	List<GameObject> coveredGrids;
 	List<GameObject> mapGrid;
 
-	// Use this for initialization
-	void Start ()
+    enum MousePhase
+    {
+        Clicked,
+        Began,
+        Moved,
+        Ended
+    }
+
+    private Vector3 dragBegin, dragEnd;
+
+    bool isClickHeld;
+    MousePhase phase;
+
+    // Use this for initialization
+    void Start ()
 	{
         this.enabled = false;
 		cameraCanvas.enabled = false;
 
-		originalMaterials = new List<Material> ();
+        isClickHeld = false;
+        phase = MousePhase.Ended;
+
+        originalMaterials = new List<Material> ();
 
 		cameras = new List<CameraController> ();
 		coveredGrids = new List<GameObject> ();
@@ -42,7 +61,103 @@ public class CCTVPlacementController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-	}
+        if (phase == MousePhase.Moved)
+        {
+            dragEnd = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            selectedCamera.transform.position = new Vector3(dragEnd.x, 0.5f, dragEnd.z);
+        }
+
+
+        if (!isClickHeld && Input.GetMouseButtonDown(0))
+        {
+            phase = MousePhase.Clicked;
+        }
+        else
+        {
+            if (Input.GetMouseButton(0))
+                isClickHeld = true;
+            else
+                isClickHeld = false;
+        }
+
+
+
+        if (isClickHeld && phase == MousePhase.Ended)
+        {
+            phase = MousePhase.Began;
+
+            // Dragging has began
+            dragBegin = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            if (EventSystem.current.IsPointerOverGameObject(-1))
+                return;
+            // Click Begin
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                Transform objectHit = hit.transform;
+
+                CameraController tempCam = objectHit.gameObject.GetComponent<CameraController>();
+
+                if (tempCam != null)
+                {
+                    if (selectedCamera != null)
+                        selectedCamera.IsSelected = false;
+
+                    selectedCamera = tempCam;
+                    selectedCamera.IsSelected = true;
+                }
+            }
+
+        }
+        else if (isClickHeld && phase == MousePhase.Began)
+        {
+            phase = MousePhase.Moved;
+
+            dragEnd = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            selectedCamera.transform.position = new Vector3(dragEnd.x, 0.5f, dragEnd.z);
+        }
+        else if (!isClickHeld && phase == MousePhase.Moved)
+        {
+            phase = MousePhase.Ended;
+
+            // Dragging has ended
+            dragEnd = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            selectedCamera.transform.position = new Vector3(dragEnd.x, 0.5f, dragEnd.z);
+        }
+
+        if (phase == MousePhase.Clicked)
+        {
+            if (EventSystem.current.IsPointerOverGameObject(-1))
+                return;
+            // Click Begin
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                Transform objectHit = hit.transform;
+
+                CameraController tempCam = objectHit.gameObject.GetComponent<CameraController>();
+
+                if (tempCam != null)
+                {
+                    if (selectedCamera != null)
+                        selectedCamera.IsSelected = false;
+
+                    selectedCamera = tempCam;
+                    selectedCamera.IsSelected = true;
+                }
+            }
+
+            phase = MousePhase.Ended;
+        }
+    }
 
     private void OnDisable()
     {
@@ -69,7 +184,7 @@ public class CCTVPlacementController : MonoBehaviour {
 
 		foreach (GameObject grid in mapGrid) 
 		{
-			originalMaterials.Add (grid.GetComponent<Renderer> ().material);
+			originalMaterials.Add (grid.GetComponent<Renderer> ().sharedMaterial);
 		}
 			
         areaController.enabled = false;
@@ -88,12 +203,10 @@ public class CCTVPlacementController : MonoBehaviour {
 	{
 		foreach(GameObject grid in detectedGrids ) 
 		{
-			if (grid.GetComponent<Material> () != areaController.gridBuilding) 
+			if (grid.GetComponent<Renderer> ().sharedMaterial.name != areaController.gridBuilding.name) 
 			{
-				if (coveredGrids.Contains (grid))
-					Debug.Log ("Dupe");
 				coveredGrids.Add (grid);
-				grid.GetComponent<Renderer> ().material = areaController.gridCovered;
+				grid.GetComponent<Renderer> ().sharedMaterial = areaController.gridCovered;
 			}
 		}
 	}
@@ -109,7 +222,7 @@ public class CCTVPlacementController : MonoBehaviour {
 			}
 
 			if (!coveredGrids.Contains(grid))
-				grid.GetComponent<Renderer> ().material = originalMaterials [mapGrid.IndexOf (grid)];
+				grid.GetComponent<Renderer> ().sharedMaterial = originalMaterials [mapGrid.IndexOf (grid)];
 			
 		}
 	}

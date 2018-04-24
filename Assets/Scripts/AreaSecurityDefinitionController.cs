@@ -41,7 +41,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
                 GameObject grid = GameObject.CreatePrimitive (PrimitiveType.Cube);
 
                 grid.transform.position = new Vector3 (x + 0.5f, 0.5f, y + 0.5f);
-                grid.GetComponent<Renderer> ().material = gridNone;
+                grid.GetComponent<Renderer> ().sharedMaterial = gridNone;
 
 
 				grid.transform.SetParent (gridParent.transform);
@@ -62,7 +62,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
 		selectedGrids = selectedGridItems;
 
 		foreach (GameObject grid in selectedGrids) {
-            grid.GetComponent<Renderer> ().material = gridSelected;
+            grid.GetComponent<Renderer> ().sharedMaterial = gridSelected;
 		}
 	}
 
@@ -71,7 +71,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
 		selectedGrids.Add(selectedGridItems);
 
 		foreach (GameObject grid in selectedGrids) {
-			grid.GetComponent<Renderer> ().material = gridSelected;
+			grid.GetComponent<Renderer> ().sharedMaterial = gridSelected;
 		}
 	}
 
@@ -80,7 +80,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
         foreach(GameObject gridItem in selectedGrids)
         {
             int index = mapGrid.IndexOf(gridItem);
-            gridItem.GetComponent<Renderer>().material = gridMarkings[index];
+            gridItem.GetComponent<Renderer>().sharedMaterial = gridMarkings[index];
         }
 
 		selectedGrids.Clear ();
@@ -174,7 +174,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
         foreach (GameObject gridItem in selectedGrids)
         {
             int index = mapGrid.IndexOf(gridItem);
-            gridItem.GetComponent<Renderer>().material = gridLow;
+            gridItem.GetComponent<Renderer>().sharedMaterial = gridLow;
             gridMarkings[index] = gridLow;
         }
 
@@ -186,7 +186,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
         foreach (GameObject gridItem in selectedGrids)
         {
             int index = mapGrid.IndexOf(gridItem);
-            gridItem.GetComponent<Renderer>().material = gridMedium;
+            gridItem.GetComponent<Renderer>().sharedMaterial = gridMedium;
             gridMarkings[index] = gridMedium;
         }
 
@@ -198,7 +198,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
         foreach (GameObject gridItem in selectedGrids)
         {
             int index = mapGrid.IndexOf(gridItem);
-            gridItem.GetComponent<Renderer>().material = gridHigh;
+            gridItem.GetComponent<Renderer>().sharedMaterial = gridHigh;
             gridMarkings[index] = gridHigh;
         }
 
@@ -210,7 +210,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
         foreach (GameObject gridItem in selectedGrids)
         {
             int index = mapGrid.IndexOf(gridItem);
-            gridItem.GetComponent<Renderer>().material = gridBuilding;
+            gridItem.GetComponent<Renderer>().sharedMaterial = gridBuilding;
             gridMarkings[index] = gridBuilding;
         }
 
@@ -224,6 +224,7 @@ public class AreaSecurityDefinitionController : MonoBehaviour {
 
     private void OnDisable()
     {
+        DeselectGrid();
 		if (areaCanvas != null)
         	areaCanvas.SetActive(false);
     }

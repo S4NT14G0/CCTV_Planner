@@ -1,13 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour {
 
-	private bool isBeingMoved;
+    public Transform lens;
+    public Canvas rotateCanvas;
+    public Button btnClockwise, btnCounterClockwise;
+
+    private bool isBeingMoved;
 	private Vector3 priorFramePosition;
     private Quaternion priorFrameRotation;
-	public Transform lens;
+
 
 	public delegate void DoneMoving(List<GameObject> detectedGrids);
     public event DoneMoving doneMoving;
@@ -16,6 +21,20 @@ public class CameraController : MonoBehaviour {
 	public event ClearCameraList clearCameraList;
 
 	public List<GameObject> detectedGrids;
+
+    private bool isSelected;
+
+    public bool IsSelected
+    {
+        get { return isSelected; }
+
+        set
+        {
+            this.rotateCanvas.enabled = value;
+
+            isSelected = value;
+        }
+    }
 
 	bool IsBeingMoved {
 		get { return this.isBeingMoved; }
@@ -30,11 +49,22 @@ public class CameraController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		IsBeingMoved = false;
+        IsSelected = false;
 		priorFramePosition = transform.position;
         priorFrameRotation = transform.rotation;
 		detectedGrids = new List<GameObject> ();
 
-		ShootRay ();
+        btnClockwise.onClick.AddListener(() => {
+            // Rotate 15 deg clockwise
+            this.transform.Rotate(new Vector3(0, 15f));
+        });
+
+        btnCounterClockwise.onClick.AddListener(() => {
+            // Rotate 15 deg counterclockwise
+            this.transform.Rotate(new Vector3(0, - 15f));
+        });
+
+        ShootRay();
 	}
 	
 	// Update is called once per frame

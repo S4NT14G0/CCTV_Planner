@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class AreaController : MonoBehaviour {
+public class AreaSecurityDefinitionController : MonoBehaviour {
 
 	private List<GameObject> mapGrid;
     private List<Material> gridMarkings;
     
-	[SerializeField]
-	private Material gridLow, gridMedium, gridHigh, gridSelected, gridNone, gridBuilding;
+	public Material gridLow, gridMedium, gridHigh, gridSelected, gridNone, gridBuilding, gridCovered;
 
     private Vector3 dragBegin, dragEnd;
 

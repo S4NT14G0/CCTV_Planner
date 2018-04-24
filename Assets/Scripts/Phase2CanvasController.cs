@@ -28,8 +28,9 @@ public class Phase2CanvasController : MonoBehaviour {
 	
     public void UpdateBank (InputField input)
     {
-        budget = int.Parse(input.text);
-        input.text = "Remaining $" + input.text;
+		budgetInput = input;
+        budget = int.Parse(budgetInput.text);
+		budgetInput.text = "Remaining $" + budget;
 
         int cameras = budget / pricePerCamera;
 
@@ -41,13 +42,13 @@ public class Phase2CanvasController : MonoBehaviour {
 			cam.transform.SetParent(buttonBank.transform);
         }
 
-        input.enabled = false;
+		budgetInput.enabled = false;
     }
 
     void OnButtonClicked (Button clickedButton)
     {
 		budget -= pricePerCamera;
-
+		budgetInput.text = "Remaining $" + budget;
 		// Notify if any UI is listening
 		if (onCreateCamera != null)
 			onCreateCamera();

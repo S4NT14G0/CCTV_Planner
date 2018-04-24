@@ -7,8 +7,11 @@ public class PlacementController : MonoBehaviour {
 	[SerializeField]
 	Canvas cameraCanvas;
 
+    [SerializeField]
+    CameraController cameraPrefab;
+
     AreaController areaController;
-	CameraBankController cameraBankController;
+	Phase2CanvasController cameraBankController;
 
 	// All the active cameras
 	List<CameraController> cameras;
@@ -22,7 +25,7 @@ public class PlacementController : MonoBehaviour {
 		cameras = new List<CameraController> ();
 
         areaController = this.GetComponent<AreaController>();
-		cameraBankController = cameraCanvas.gameObject.GetComponent<CameraBankController> ();
+		cameraBankController = cameraCanvas.gameObject.GetComponent<Phase2CanvasController> ();
 
 		cameraBankController.onCreateCamera += HandleNewCameraEvent;
 	}
@@ -31,6 +34,21 @@ public class PlacementController : MonoBehaviour {
 	void Update () {
 
 	}
+
+    private void OnDisable()
+    {
+        if (cameraBankController != null)
+            cameraBankController.onCreateCamera -= HandleNewCameraEvent;
+
+        if (cameras != null)
+        {
+            foreach (CameraController camera in cameras)
+            {
+                if (camera != null)
+                    camera.onDetected -= OnGridDetectedByCCTV;
+            }
+        }
+    }
 
     public void BeginPhase()
     {
@@ -43,6 +61,15 @@ public class PlacementController : MonoBehaviour {
 
 	void HandleNewCameraEvent ()
 	{
-		Debug.Log ("Handled");
-	}
+        CameraController camera = (CameraController)Instantiate(cameraPrefab, new Vector3(50f, 0.5f, 50f), new Quaternion(0f,0f,0f, 0f));
+        cameras.Add(camera);
+        camera.onDetected += OnGridDetectedByCCTV;
+    }
+
+
+    public void OnGridDetectedByCCTV (List<GameObject> detectedGrids)
+    {
+
+    }
+    
 }

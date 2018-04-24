@@ -5,55 +5,72 @@ using UnityEngine;
 public class CameraController : MonoBehaviour {
 
 	private bool isBeingMoved;
-	private Transform priorFrameTransform;
+	private Vector3 priorFramePosition;
+    private Quaternion priorFrameRotation;
 	public Transform lens;
 
+    public delegate void OnDetected(List<GameObject> detectedGrids);
+    public event OnDetected onDetected;
+
 	bool IsBeingMoved {
-		get { return this.IsBeingMoved; }
+		get { return this.isBeingMoved; }
 
 		set {
 
-			Debug.Log (value);
-
-			this.isBeingMoved = value; 
+            if (this.isBeingMoved && !value)
+                ShootRay();
+            this.isBeingMoved = value; 
 		}
 	}
 
 	// Use this for initialization
 	void Start () {
 		IsBeingMoved = false;
-		priorFrameTransform = this.transform;
+		priorFramePosition = transform.position;
+        priorFrameRotation = transform.rotation;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-		if (Vector3.Distance(lens.transform.position, priorFrameTransform.position) > 0.1f ) {
+		if ((Vector3.Distance(transform.position, priorFramePosition) > 0.01f) || Quaternion.Angle(transform.rotation, priorFrameRotation) > 0.01f) {
 			IsBeingMoved = true;
 		} else {
-			IsBeingMoved = false;
+            if (IsBeingMoved)
+			    IsBeingMoved = false;
 		}
 
-		priorFrameTransform = this.transform;
+        priorFramePosition = transform.position;
+        priorFrameRotation = transform.rotation;
 	}
 
 	void ShootRay () {
+        float arcAngle = 100;
+        int numLines = 25;
 
-		float arcAngle = 180.0f;
-		int numLines = 180;
+        List<GameObject> detectedGrids = new List<GameObject>();
 
-		for (int i = 0; i < numLines; i++) {
-			Vector3 shootVec = lens.rotation * Quaternion.AngleAxis(-1*arcAngle/2+(i*arcAngle/numLines), lens.transform.up) * lens.transform.forward;
+        for (int i = 0; i < numLines; i++)
+        {
+            Vector3 shootVec =  Quaternion.AngleAxis(-1 * arcAngle / 2 + (i * arcAngle / numLines), transform.up) * transform.forward;
 
-			RaycastHit hit;
+            RaycastHit[] hits;
+            hits = Physics.RaycastAll(lens.position, shootVec, 20f);
 
-			if (Physics.Raycast(lens.position, shootVec, out hit, 200.0f)) {
-				Debug.DrawLine(lens.position, hit.point + new Vector3(0,0,20f), Color.green);
+            for (int j = 0; j < hits.Length; j++)
+            {
+                RaycastHit hit = hits[j];
 
-				if (hit.transform != null) {
-					Debug.Log ("Gottem");
-				}
-			}
-		}
-	}
+                if (!detectedGrids.Contains(hit.transform.gameObject))
+                    detectedGrids.Add(hit.transform.gameObject);
+
+                Debug.DrawLine(lens.position, hit.point, Color.green);
+            }
+
+            if (onDetected != null)
+                onDetected(detectedGrids);
+
+        }
+
+    }
 }

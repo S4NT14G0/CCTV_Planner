@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class CCTVPlacementController : MonoBehaviour {
 
 	[SerializeField]
 	Canvas cameraCanvas;
+
+	[SerializeField]
+	Text securityCoverageIndexTextBox;
 
     [SerializeField]
     CameraController cameraPrefab;
@@ -209,6 +213,66 @@ public class CCTVPlacementController : MonoBehaviour {
 				grid.GetComponent<Renderer> ().sharedMaterial = areaController.gridCovered;
 			}
 		}
+		securityCoverageIndexTextBox.text = "Security Coverage Index: " + (CalculateSecurityCoverageIndex () * 100).ToString ("00.00") + "%";
+	}
+
+	float CalculateSecurityCoverageIndex () 
+	{
+		float weightedCameraAreaCovered = 0;
+		float totalWeightedArea = 0;
+
+		foreach (GameObject grid in mapGrid) 
+		{
+			if (grid.GetComponent<Renderer> ().sharedMaterial == areaController.gridCovered) {
+
+				Material originalMaterial = originalMaterials [mapGrid.IndexOf (grid)];
+
+
+				if (originalMaterial == areaController.gridHigh) 
+				{
+					weightedCameraAreaCovered += 3;
+					totalWeightedArea += 3;
+				} 
+				else if (originalMaterial == areaController.gridMedium) 
+				{
+					weightedCameraAreaCovered += 2;
+					totalWeightedArea += 2;
+				}				
+				else if (originalMaterial == areaController.gridLow) 
+				{
+					weightedCameraAreaCovered += 1;
+					totalWeightedArea += 1;
+				}
+				else if (originalMaterial == areaController.gridNone) 
+				{
+					weightedCameraAreaCovered += 0.5f;
+					totalWeightedArea += 0.5f;
+				}
+
+			} else {
+				Material material = grid.GetComponent<Renderer> ().sharedMaterial;
+
+
+				if (material == areaController.gridHigh) 
+				{
+					totalWeightedArea += 3;
+				} 
+				else if (material == areaController.gridMedium) 
+				{
+					totalWeightedArea += 2;
+				}				
+				else if (material == areaController.gridLow) 
+				{
+					totalWeightedArea += 1;
+				}
+				else if (material == areaController.gridNone) 
+				{
+					totalWeightedArea += 0.5f;
+				}
+			}
+		}
+
+		return weightedCameraAreaCovered / totalWeightedArea;
 	}
 
 	public void OnCameraClearingList (List<GameObject> removedGrids) 
